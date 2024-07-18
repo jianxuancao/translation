@@ -2,9 +2,8 @@ import numpy as np
 import pyvista as pv
 
 
-def align_model_to_corner(obj_filename, output_filename):
-    # 读取OBJ文件
-    mesh = pv.read(obj_filename)
+def align_stl_to_corner(stl_filename, output_filename):
+    mesh = pv.read(stl_filename)  # 读取STL文件
 
     # 获取点坐标
     points = mesh.points
@@ -26,6 +25,7 @@ def align_model_to_corner(obj_filename, output_filename):
 
     # 平移模型
     mesh.translate(translation, inplace=True)
+    mesh = mesh.compute_normals(cell_normals=True, point_normals=True, inplace=False)
 
     # 重新计算平移后的坐标边界
     points = mesh.points
@@ -43,8 +43,9 @@ def align_model_to_corner(obj_filename, output_filename):
     # 保存平移后的模型
     mesh.save(output_filename)
 
-if __name__ == '__main__':
-    obj_filename = "unaligned.obj"  # 输入OBJ文件路径
-    output_filename = "aligned.obj"  # 输出OBJ文件路径
 
-    align_model_to_corner(obj_filename, output_filename)
+if __name__ == '__main__':
+    obj_filename = "unaligned.stl"
+    output_filename = "aligned.stl"
+
+    align_stl_to_corner(obj_filename, output_filename)
