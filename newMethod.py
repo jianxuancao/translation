@@ -18,6 +18,7 @@ size = dicom_image.GetSize()
 print(spacing)
 print(size)
 
+
 def world_coordinate_to_stl(pos_input):
     def convert_ras_to_lps(ras_point):
         x, y, z = ras_point
@@ -61,45 +62,52 @@ def world_coordinate_to_stl(pos_input):
         return temp_file.name
 
     # 指定数组形状、球的半径和球心的位置
-    array_shape = size
+    # array_shape = size
     sphere_center = convert_ras_to_lps(pos_input)
 
     # 生成包含球的 NumPy 数组
     # 拆小包围框，并修改原点位置。
-    sphere_array = generate_array_with_sphere(array_shape, 3, sphere_center)
-    result4 = sphere_array[
-              int(sphere_center[2]) - 25:int(sphere_center[2] + 25),
-              int(sphere_center[1]) - 25:int(sphere_center[1]) + 25,
-              int(sphere_center[0]) - 25:int(sphere_center[0]) + 25
-              ]
+    # sphere_array = generate_array_with_sphere(array_shape, 3, sphere_center)
+    # result4 = sphere_array[
+    #           int(sphere_center[2]) - 25:int(sphere_center[2] + 25),
+    #           int(sphere_center[1]) - 25:int(sphere_center[1]) + 25,
+    #           int(sphere_center[0]) - 25:int(sphere_center[0]) + 25
+    #           ]
     world_coordinate = dicom_image.TransformIndexToPhysicalPoint(
         (int(sphere_center[0]) - 25, int(sphere_center[1]) - 25, int(sphere_center[2]) - 25))
 
-    origin = world_coordinate
-    label = 1
-    mesh1 = pv.wrap(result4)
-    mesh1.origin = origin
-    mesh1.spacing = spacing
-    clipped = mesh1.threshold([label - 0.5, label + 0.5])
-    clipped = clipped.clip_scalar(
-        value=label - 0.5, invert=False
-    )
+    # origin = world_coordinate
+    # label = 1
+    # mesh1 = pv.wrap(result4)
+    # mesh1.origin = origin
+    # mesh1.spacing = spacing
+    # clipped = mesh1.threshold([label - 0.5, label + 0.5])
+    # clipped = clipped.clip_scalar(
+    #     value=label - 0.5, invert=False
+    # )
+    #
+    # print("world_coordinate", world_coordinate)
+    # print("spacing", spacing)
+    #
+    # surf = clipped.extract_surface()
+    # surf = surf.smooth(80)
+    # surf = surf.triangulate()
+    #
+    # surf1 = surf.decimate(0.9)
 
-    surf = clipped.extract_surface()
-    surf = surf.smooth(80)
-    surf = surf.triangulate()
-
-    surf1 = surf.decimate(0.9)
-
-    return polydata_to_buffer(surf1)
+    # return polydata_to_buffer(surf1)
+    return world_coordinate, spacing
 
 
 if __name__ == '__main__':
-    # ---------------------------------------------------------------------------------------
     pos = [267, 174, 297]
+    pos = [100, 100, 100]
 
     start = time.time()
-    poltbuffer = world_coordinate_to_stl(pos)
+    # poltbuffer = world_coordinate_to_stl(pos)
+    origin, scale = world_coordinate_to_stl(pos)
+    print("origin: ", origin)
+    print("scale: ", scale)
 
     finish = time.time()
 
@@ -108,28 +116,28 @@ if __name__ == '__main__':
 
     # ---------------------------------------------------------------------------------------
 
-    # 将STL文件内容写入到指定文件
-    with open('lung_100.stl', 'wb') as f:
-        f.write(open(poltbuffer, 'rb').read())
-
-    # 清理临时文件
-    os.unlink(poltbuffer)
-
-    stl_filename = 'lung_100.stl'  # STL文件路径
-
-    mesh = pv.read(stl_filename)  # 读取STL文件
-
-    # 获取点坐标
-    points = mesh.points
-
-    # 计算坐标边界
-    min_x = np.min(points[:, 0])
-    max_x = np.max(points[:, 0])
-    min_y = np.min(points[:, 1])
-    max_y = np.max(points[:, 1])
-    min_z = np.min(points[:, 2])
-    max_z = np.max(points[:, 2])
-
-    print("坐标边界：")
-    print(f"最小点：({min_x}, {min_y}, {min_z})")
-    print(f"最大点：({max_x}, {max_y}, {max_z})")
+    # # 将STL文件内容写入到指定文件
+    # with open('unaligned.stl', 'wb') as f:
+    #     f.write(open(poltbuffer, 'rb').read())
+    #
+    # # 清理临时文件
+    # os.unlink(poltbuffer)
+    #
+    # stl_filename = 'unaligned.stl'  # STL文件路径
+    #
+    # mesh = pv.read(stl_filename)  # 读取STL文件
+    #
+    # # 获取点坐标
+    # points = mesh.points
+    #
+    # # 计算坐标边界
+    # min_x = np.min(points[:, 0])
+    # max_x = np.max(points[:, 0])
+    # min_y = np.min(points[:, 1])
+    # max_y = np.max(points[:, 1])
+    # min_z = np.min(points[:, 2])
+    # max_z = np.max(points[:, 2])
+    #
+    # print("坐标边界：")
+    # print(f"最小点：({min_x}, {min_y}, {min_z})")  # 最小点：(-2.8409910202026367, 16.903127670288086, -170.81256103515625)
+    # print(f"最大点：({max_x}, {max_y}, {max_z})")  # 最大点：(17.433626174926758, 37.229427337646484, -151.6900177001953)
