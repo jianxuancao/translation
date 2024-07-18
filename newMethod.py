@@ -18,8 +18,7 @@ size = dicom_image.GetSize()
 print(spacing)
 print(size)
 
-
-def world_coordinate_to_stl(voxel_index1):
+def world_coordinate_to_stl(pos_input):
     def convert_ras_to_lps(ras_point):
         x, y, z = ras_point
         lps_point = [x, z, size[2] - y]
@@ -63,12 +62,11 @@ def world_coordinate_to_stl(voxel_index1):
 
     # 指定数组形状、球的半径和球心的位置
     array_shape = size
-    sphere_radius = 3
-    sphere_center = convert_ras_to_lps(voxel_index1)
+    sphere_center = convert_ras_to_lps(pos_input)
 
     # 生成包含球的 NumPy 数组
     # 拆小包围框，并修改原点位置。
-    sphere_array = generate_array_with_sphere(array_shape, sphere_radius, sphere_center)
+    sphere_array = generate_array_with_sphere(array_shape, 3, sphere_center)
     result4 = sphere_array[
               int(sphere_center[2]) - 25:int(sphere_center[2] + 25),
               int(sphere_center[1]) - 25:int(sphere_center[1]) + 25,
@@ -93,13 +91,33 @@ def world_coordinate_to_stl(voxel_index1):
 
     surf1 = surf.decimate(0.9)
 
-    jsonpolydata = polydata_to_buffer(surf1)
-    return jsonpolydata
+    return polydata_to_buffer(surf1)
 
 
-def stl_to_obj(stl_filename, obj_filename):
-    # 读取STL文件
-    mesh = pv.read(stl_filename)
+if __name__ == '__main__':
+    # ---------------------------------------------------------------------------------------
+    pos = [267, 174, 297]
+
+    start = time.time()
+    poltbuffer = world_coordinate_to_stl(pos)
+
+    finish = time.time()
+
+    elapsedTime = finish - start
+    print(elapsedTime, " sec")
+
+    # ---------------------------------------------------------------------------------------
+
+    # 将STL文件内容写入到指定文件
+    with open('lung_100.stl', 'wb') as f:
+        f.write(open(poltbuffer, 'rb').read())
+
+    # 清理临时文件
+    os.unlink(poltbuffer)
+
+    stl_filename = 'lung_100.stl'  # STL文件路径
+
+    mesh = pv.read(stl_filename)  # 读取STL文件
 
     # 获取点坐标
     points = mesh.points
@@ -115,67 +133,3 @@ def stl_to_obj(stl_filename, obj_filename):
     print("坐标边界：")
     print(f"最小点：({min_x}, {min_y}, {min_z})")
     print(f"最大点：({max_x}, {max_y}, {max_z})")
-
-    # 导出为OBJ文件
-    mesh.save(obj_filename)
-
-
-# ---------------------------------------------------------------------------------------
-
-if __name__ == '__main__':
-    id = [267, 174, 297]
-    # id = [100, 100, 100]
-
-    start = time.time()
-    poltbuffer = world_coordinate_to_stl(id)
-
-    finish = time.time()
-
-    elapsedTime = finish - start
-    print(elapsedTime, " sec")
-
-    id = [267, 174, 297]
-    # id = [100, 100, 100]
-
-    start = time.time()
-    poltbuffer = world_coordinate_to_stl(id)
-
-    finish = time.time()
-
-    elapsedTime = finish - start
-    print(elapsedTime, " sec")
-
-    id = [267, 174, 297]
-    # id = [100, 100, 100]
-
-    start = time.time()
-    poltbuffer = world_coordinate_to_stl(id)
-
-    finish = time.time()
-
-    elapsedTime = finish - start
-    print(elapsedTime, " sec")
-
-    id = [267, 174, 297]
-    # id = [100, 100, 100]
-
-    start = time.time()
-    poltbuffer = world_coordinate_to_stl(id)
-
-    finish = time.time()
-
-    elapsedTime = finish - start
-    print(elapsedTime, " sec")
-
-    # 将STL文件内容写入到指定文件
-    with open('lung_100.stl', 'wb') as f:
-        f.write(open(poltbuffer, 'rb').read())
-
-
-    # 清理临时文件
-    os.unlink(poltbuffer)
-
-    stl_filename = 'lung_100.stl'  # STL文件路径
-    obj_filename = 'lung_100.obj'  # 输出OBJ文件路径
-
-    stl_to_obj(stl_filename, obj_filename)
