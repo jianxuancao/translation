@@ -1,9 +1,5 @@
 import SimpleITK as sitk
-import vtkmodules.all as vtk
-import pyvista as pv
-import numpy as np
-import tempfile
-import os
+
 import time
 
 start = time.time_ns()
